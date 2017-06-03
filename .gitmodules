@@ -1,0 +1,3 @@
+[submodule "habanero"]
+	path = habanero
+	url = https://github.com/sckott/habanero
