@@ -1,6 +1,6 @@
 
-from PyQt4 import QtGui, QtCore
-from PyQt4.Qt import *
+from PyQt5 import QtGui, QtCore
+from PyQt5.Qt import *
 
 from calibre.ebooks.metadata.sources.base import Source
 from calibre.ebooks.metadata.book.base import Metadata
