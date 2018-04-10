@@ -1,11 +1,8 @@
-PLUGIN = calibre-crossref
-
 SRC_DIR = ./src/calibre-crossref
 SOURCES = $(shell find $(SRC_DIR) -iname '*.py')
 
 BUILD_DIR = ./build
-## It is important that the tarball has the same basename as the plugin.
-TARBALL = $(BUILD_DIR)/$(PLUGIN).zip
+TARBALL = $(BUILD_DIR)/calibre-crossref.zip
 
 .PHONY: all install uninstall clean run
 
@@ -23,7 +20,7 @@ install: $(TARBALL)
 	calibre-customize --a "$(TARBALL)" ;
 
 uninstall:
-	calibre-customize --r "$(PLUGIN)" ;
+	calibre-customize --r "Crossref" ; # Name of the plugin.
 
 clean:
 	[[ -d $(BUILD_DIR) ]] && rm -rf $(BUILD_DIR) ;
