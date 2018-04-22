@@ -27,7 +27,7 @@ class CrossrefSource(Source):
 
     capabilities            = frozenset(['identify'])
     touched_fields          = frozenset(
-        ['title', 'authors', 'publisher', 'pubdate', 'series']
+        ['title', 'authors', 'publisher', 'pubdate']
     )
 
     ## If following is True,
