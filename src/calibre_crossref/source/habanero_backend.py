@@ -44,8 +44,27 @@ class HabaneroBackend(object):
 
     def query(self, title, authors=None, identifiers=None):
         """Query Crossref for all works matching specified criteria."""
-        res = self._crossref.works(query=title, limit=self._max_results,
-                                   timeout=self._timeout)
+        self._log_debug("Given search title: {}".format(title))
+        self._log_debug("Given search authors: {}".format(repr(authors)))
+        self._log_debug("Given search ids: {}".format(repr(identifiers)))
+        if isinstance(authors, (list, tuple)) and (authors[0] == 'Unknown'):
+            authors = None
+        ids = None
+        ## Only DOIs are recognized by crossref.
+        if isinstance(identifiers, dict):
+            ids = [identifiers.get('doi', None)] # Must be a list!
+        self._log_debug("Passed search authors: {}".format(repr(authors)))
+        self._log_debug("Passed search ids: {}".format(repr(ids)))
+        ## For some reason, if ids are passed along with anything else,
+        ## search fails.
+        if ids:
+            res = self._crossref.works(ids=ids,
+                                       timeout=self._timeout)
+        else:
+            res = self._crossref.works(query=title,
+                                       query_author=authors,
+                                       limit=self._max_results,
+                                       timeout=self._timeout)
         status = res["status"]
         if status != "ok":
             msg = "query failed with status {}".format(status)
@@ -53,7 +72,10 @@ class HabaneroBackend(object):
             return ()
         ## Return list of metadata objects.
         ## Each work corresponds to a distinct set of metadata.
-        ml = [self._parse_work(work) for work in res["message"]["items"]]
+        if ids:
+            ml = [self._parse_work(res["message"])]
+        else:
+            ml = [self._parse_work(work) for work in res["message"]["items"]]
         return ml
 
     def _parse_work(self, work):
