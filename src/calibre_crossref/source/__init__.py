@@ -22,7 +22,7 @@ class CrossrefSource(Source):
     action_type             = 'current'
     supported_platforms     = ['linux']
     author                  = 'Panagiotis Vlantis'
-    version                 = (0, 0, 3)
+    version                 = (0, 0, 4)
     minimum_calibre_version = (0, 8, 0)
 
     capabilities            = frozenset(['identify'])
