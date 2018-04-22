@@ -50,7 +50,7 @@ class CrossrefSource(Source):
         """ TODO """
         cands = ()
         ## Currently, only one back-end is implemented.
-        getter = HabaneroBackend()
+        getter = HabaneroBackend(logger=log)
         log("Retrieving metadata from Crossref...")
         cands = getter.query(title, authors, identifiers)
         log("Found {:d} candidates.".format(len(cands)))

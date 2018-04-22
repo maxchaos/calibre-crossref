@@ -58,8 +58,11 @@ class HabaneroBackend(object):
 
     def _parse_work(self, work):
         """Convert work data into calibre metadata."""
+        self._log_debug("")
         ## Extract title.
         title = work.get("title")[0]
+        title = title if title is not None else u"Unknown"
+        self._log_debug("Title: '{}'".format(title))
         ## Extract authors.
         authors = []
         for auth in work.get("author", []):
@@ -68,9 +71,11 @@ class HabaneroBackend(object):
             if auth:
                 authors.append(auth)
         authors = authors if authors else (u"Unknown",)
+        self._log_debug("Authors: {}".format(repr(authors)))
         ## Initialize calibre's metadata object (requires title).
         mi = Metadata(title, authors)
         ## Extract identifiers.
+        self._log_debug("Identifiers:")
         idents = {
             'isbn': work.get('ISBN'),
             'doi': work.get('DOI'),
@@ -82,12 +87,21 @@ class HabaneroBackend(object):
         for k, v in idents.items():
             if v is not None and k != 'isbn':
                 mi.set_identifier(k, v)
+                self._log_debug("\t {}: {}".format(k, v))
         if 'isbn' in idents and idents['isbn'] is not None:
-            self._log_debug("ISBN: {}".format(idents['isbn']))
             mi.isbn = check_isbn(idents['isbn'])
+            self._log_debug("\t isbn: {}".format(idents['isbn']))
         ## Extract published date.
-        mi.set_identifier('pubdate',
-                          self._parse_work_pubdate(work).date().isoformat())
+        pubdate = self._parse_work_pubdate(work)
+        if pubdate is not None:
+            pubdate = pubdate.replace(tzinfo=calibre.utils.date.utc_tz)
+        mi.pubdate = pubdate
+        self._log_debug("Pubdate: {}".format(repr(pubdate)))
+        ## Extract publisher.
+        publisher = self._parse_work_publisher(work)
+        self.publisher = publisher
+        self._log_debug("Publisher: {}".format(publisher))
+        ## Return extracted data.
         return mi
 
     def _parse_work_pubdate(self, work):
@@ -119,12 +133,19 @@ class HabaneroBackend(object):
                 ## All necessary fields (year, month, day) have been found.
                 date = datetime.datetime(*(int(elt) for elt in date_created))
                 return date
-        ## TODO: attempt to extract dates from fields 'published-print'.
+        ## Try to infer date from a 'published-print' field.
+        published_print = work.get('published-print')
+        if published_print is not None:
+            date_published_print = published_print.get('date-parts')[0]
+            if len(date_published_print) == 3:
+                ## All necessary fields (year, month, day) have been found.
+                date = datetime.datetime(
+                    *(int(elt) for elt in date_published_print))
+                return date
         ## TODO: try to infer missing date parameters from multiple fields
         ## If everything failed, return nothing.
         return None
 
-    def _parse_work_publisher(self):
+    def _parse_work_publisher(self, work):
         """ TODO """
-        msg = "NOT IMPLEMENTED"
-        raise NotImplementedError(msg)
+        return work.get('publisher', None)
