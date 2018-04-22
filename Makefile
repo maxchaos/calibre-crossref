@@ -20,7 +20,7 @@ install: $(TARBALL)
 	calibre-customize --a "$(TARBALL)" ;
 
 uninstall:
-	calibre-customize --r "Crossref" ; # Name of the plugin.
+	calibre-customize --r "Crossref.org" ; # Metadata download plugin's name.
 
 clean:
 	[[ -d $(BUILD_DIR) ]] && rm -rf $(BUILD_DIR) ;

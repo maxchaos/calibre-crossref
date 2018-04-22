@@ -1,73 +1,27 @@
-"""
-Metadata retriever for Calibre using Crossref as a source.
-"""
 import datetime                 # required for processing pubdates
 
-from PyQt5 import QtGui, QtCore
-from PyQt5.Qt import *
-
-from calibre.ebooks.metadata.sources.base import Source
 from calibre.ebooks.metadata.book.base import Metadata
-
 import calibre.utils.date
 from calibre.ebooks.metadata import check_isbn
 
 try:
-    from habanero import Crossref as HabaneroBackend
+    from habanero import Crossref
 except ImportError:
     pass
 
-class CrossrefSource(Source):
-    """Crossref Source."""
-    name                    = 'Crossref'
-    description             = 'Query crossref.org for metadata'
-    action_type             = 'current'
-    supported_platforms     = ['linux']
-    author                  = 'Panagiotis Vlantis'
-    version                 = (0, 0, 2)
-    minimum_calibre_version = (0, 8, 0)
-
-    capabilities            = frozenset(['identify'])
-    touched_fields          = frozenset(
-        ['title', 'authors', 'publisher', 'pubdate', 'series']
-    )
-
-    ## If following is True,
-    ## then results without ISBN get automatically ignored...
-    prefer_results_with_isbn = False
-
-    def config_widget(self):
-        """ TODO """
-        pass
-
-    def save_setting(self, config_widget):
-        """ TODO """
-        pass
-
-    def identify(self,
-                 log, result_queue, abort,
-                 title=None, authors=None, identifiers=None,
-                 timeout=30):
-        """ TODO """
-        log("Retrieving metadata from Crossref...")
-        cands = ()
-        getter = HabaneroFrontend()
-        ## Perform metadata candidates query.
-        cands = getter.query(title, authors, identifiers)
-        log("Found {:d} candidates.".format(len(cands)))
-        ## Place every metadata candidate in this list.
-        for c in cands:
-            result_queue.put(c)
-        return
-
-class HabaneroFrontend(object):
-    """Calibre-Crossref Interface."""
+class HabaneroBackend(object):
+    """Calibre-Crossref Interface via habanero."""
     def __init__(self, logger=None):
         """ TODO """
         ## Logger.
         self._logger = logger
         ## Initialize Crossref backend.
-        self._backend = HabaneroBackend()
+        try:
+            self._crossref = Crossref()
+        except NameError:
+            msg = "could not load habanero backend"
+            self._log_error(msg)
+            raise RuntimeError(msg)
         ## Initialize plugin parameters to default values.
         self._max_results = 5
         self._timeout = 5       # sec
@@ -90,8 +44,8 @@ class HabaneroFrontend(object):
 
     def query(self, title, authors=None, identifiers=None):
         """Query Crossref for all works matching specified criteria."""
-        res = self._backend.works(query=title, limit=self._max_results,
-                                  timeout=self._timeout)
+        res = self._crossref.works(query=title, limit=self._max_results,
+                                   timeout=self._timeout)
         status = res["status"]
         if status != "ok":
             msg = "query failed with status {}".format(status)
@@ -126,7 +80,7 @@ class HabaneroFrontend(object):
             if v is not None and isinstance(v, (list, tuple)):
                 idents[k] = v[0]
         for k, v in idents.items():
-            if v is not None and k is not 'isbn':
+            if v is not None and k != 'isbn':
                 mi.set_identifier(k, v)
         if 'isbn' in idents and idents['isbn'] is not None:
             self._log_debug("ISBN: {}".format(idents['isbn']))
@@ -174,7 +128,3 @@ class HabaneroFrontend(object):
         """ TODO """
         msg = "NOT IMPLEMENTED"
         raise NotImplementedError(msg)
-
-class ConfigWidget(QWidget):
-    """Plugin's Configuration Widget."""
-    pass
