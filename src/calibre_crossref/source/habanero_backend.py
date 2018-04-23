@@ -1,4 +1,5 @@
 import datetime                 # required for processing pubdates
+import HTMLParser               # required for unescaping html entities
 
 from calibre.ebooks.metadata.book.base import Metadata
 import calibre.utils.date
@@ -22,6 +23,8 @@ class HabaneroBackend(object):
             msg = "could not load habanero backend"
             self._log_error(msg)
             raise RuntimeError(msg)
+        ## Utilities
+        self._htmlps = HTMLParser.HTMLParser()
         ## Initialize plugin parameters to default values.
         self._max_results = 5
         self._timeout = 5       # sec
@@ -83,8 +86,9 @@ class HabaneroBackend(object):
         """Convert work data into calibre metadata."""
         self._log_debug("")
         ## Extract title.
-        title = work.get("title")[0]
+        title = work.get("title", None)[0]
         title = title if title is not None else u"Unknown"
+        title = self._htmlps.unescape(title)
         self._log_debug("Title: '{}'".format(title))
         ## Extract authors.
         authors = []
@@ -92,6 +96,7 @@ class HabaneroBackend(object):
             auth = "{:s} {:s}".format(auth.get("given", ''),
                                       auth.get("family", '')).strip()
             if auth:
+                auth = self._htmlps.unescape(auth)
                 authors.append(auth)
         authors = authors if authors else (u"Unknown",)
         self._log_debug("Authors: {}".format(repr(authors)))
@@ -171,4 +176,7 @@ class HabaneroBackend(object):
 
     def _parse_work_publisher(self, work):
         """ TODO """
-        return work.get('publisher', None)
+        publisher = work.get('publisher', None)
+        if publisher is not None:
+            publisher = self._htmlps.unescape(publisher)
+        return publisher
