@@ -52,7 +52,8 @@ class HabaneroBackend(object):
         ids = None
         ## Only DOIs are recognized by crossref.
         if isinstance(identifiers, dict):
-            ids = [identifiers.get('doi', None)] # Must be a list!
+            # Must be a list!
+            ids = [identifiers.get('doi')] if 'doi' in identifiers else None
         self._log_debug("Passed search authors: {}".format(repr(authors)))
         self._log_debug("Passed search ids: {}".format(repr(ids)))
         ## For some reason, if ids are passed along with anything else,
