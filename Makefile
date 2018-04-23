@@ -1,29 +1,13 @@
-SRC_DIR = ./src/calibre-crossref
-SOURCES = $(shell find $(SRC_DIR) -iname '*.py')
+SRC_DIR = ./src/calibre_crossref
+PLUGIN_METADL_NAME = "Crossref.org"
 
-BUILD_DIR = ./build
-TARBALL = $(BUILD_DIR)/calibre-crossref.zip
+.PHONY: all install uninstall run
 
-.PHONY: all install uninstall clean run
-
-$(TARBALL): $(SOURCES) | $(BUILD_DIR)
-	tmpdir=$$(mktemp -d -p /tmp calibre-crossref-XXXXX) ; \
-	tmpfile=$${tmpdir}/tarball.zip ; \
-	[[ -d $${tmpdir} ]] && \
-	( cd "$(SRC_DIR)" && zip -r $${tmpfile} * ) && \
-	cp $${tmpfile} $(TARBALL) ;
-
-$(BUILD_DIR):
-	mkdir -p $@ ;
-
-install: $(TARBALL)
-	calibre-customize --a "$(TARBALL)" ;
+install:
+	calibre-customize -b $(SRC_DIR) ;
 
 uninstall:
-	calibre-customize --r "Crossref.org" ; # Metadata download plugin's name.
-
-clean:
-	[[ -d $(BUILD_DIR) ]] && rm -rf $(BUILD_DIR) ;
+	calibre-customize -r $(PLUGIN_METADL_NAME) ;
 
 run:
 	calibre-debug -g
