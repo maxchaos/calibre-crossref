@@ -1,10 +1,6 @@
 """
 Metadata Downloader for Calibre using Crossref.
 """
-
-from PyQt5 import QtGui, QtCore
-from PyQt5.Qt import *
-
 from calibre.ebooks.metadata.sources.base import Source
 
 from .habanero_backend import HabaneroBackend
@@ -35,14 +31,6 @@ class CrossrefSource(Source):
     ## In general, we don't want that.
     prefer_results_with_isbn = False
 
-    def config_widget(self):
-        """ TODO """
-        pass
-
-    def save_setting(self, config_widget):
-        """ TODO """
-        pass
-
     def identify(self,
                  log, result_queue, abort,
                  title=None, authors=None, identifiers=None,
@@ -58,7 +46,3 @@ class CrossrefSource(Source):
         for c in cands:
             result_queue.put(c)
         return
-
-class ConfigWidget(QWidget):
-    """Plugin's Configuration Widget."""
-    pass
