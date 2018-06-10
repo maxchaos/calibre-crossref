@@ -86,15 +86,15 @@ class HabaneroBackend(object):
         """Convert work data into calibre metadata."""
         self._log_debug("")
         ## Extract title.
-        title = work.get("title", None)[0]
+        title = work.get("title", None)[0].decode("utf-8")
         title = title if title is not None else u"Unknown"
         title = self._htmlps.unescape(title)
         self._log_debug("Title: '{}'".format(title))
         ## Extract authors.
         authors = []
         for auth in work.get("author", []):
-            auth = "{:s} {:s}".format(auth.get("given", ''),
-                                      auth.get("family", '')).strip()
+            auth = u"{:s} {:s}".format(auth.get("given", ''),
+                                       auth.get("family", '')).strip()
             if auth:
                 auth = self._htmlps.unescape(auth)
                 authors.append(auth)
@@ -178,5 +178,5 @@ class HabaneroBackend(object):
         """ TODO """
         publisher = work.get('publisher', None)
         if publisher is not None:
-            publisher = self._htmlps.unescape(publisher)
+            publisher = self._htmlps.unescape(publisher).decode("utf-8")
         return publisher
